@@ -1,35 +1,40 @@
-import { instrument } from "@fiberplane/hono-otel";
-import { createFiberplane, createOpenAPISpec } from "@fiberplane/hono";
 import { drizzle } from "drizzle-orm/d1";
+import { createFiberplane } from "@fiberplane/hono";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import * as schema from "./db/schema";
 
 type Bindings = {
   DB: D1Database;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{
+  Bindings: Bindings;
+}>()
+  .get("/", (c) => {
+    return c.text("Honc from above! ☁️🪿");
+  })
+  .get("/api/users", async (c) => {
+    const db = drizzle(c.env.DB);
+    const users = await db.select().from(schema.users);
+    return c.json({ users });
+  })
+  .post("/api/user", async (c) => {
+    const db = drizzle(c.env.DB);
+    const { name, email } = await c.req.json();
+    const [newUser] = await db.insert(schema.users).values({
+      name: name,
+      email: email,
+    }).returning();
 
-app.get("/", (c) => {
-  return c.text("Honc from above! ☁️🪿");
-});
+    return c.json(newUser);
+  });
 
-app.get("/api/users", async (c) => {
-  const db = drizzle(c.env.DB);
-  const users = await db.select().from(schema.users);
-  return c.json({ users });
-});
-
-app.post("/api/user", async (c) => {
-  const db = drizzle(c.env.DB);
-  const { name, email } = await c.req.json();
-
-  const [newUser] = await db.insert(schema.users).values({
-    name: name,
-    email: email,
-  }).returning();
-
-  return c.json(newUser);
+app.onError((error, c) => {
+  if (error instanceof HTTPException) {
+    return c.json({ message: error.message }, error.status);
+  }
+  return c.json({ message: "Something went wrong" }, 500);
 });
 
 /**

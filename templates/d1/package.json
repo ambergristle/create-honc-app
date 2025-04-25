@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify src/index.ts",
+    "test": "vitest",
     "db:touch": "wrangler d1 execute honc-d1-database --local --command='SELECT 1'",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply honc-d1-database --local",
@@ -23,12 +24,14 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@cloudflare/vitest-pool-workers": "^0.8.22",
     "@cloudflare/workers-types": "^4.20250321.0",
     "@fiberplane/hono-otel": "^0.6.2",
     "@libsql/client": "^0.14.0",
     "drizzle-kit": "^0.30.4",
     "drizzle-seed": "^0.3.1",
     "tsx": "^4.19.2",
+    "vitest": "~3.0.0",
     "wrangler": "^4.4.0"
   }
 }
