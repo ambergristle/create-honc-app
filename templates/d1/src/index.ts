@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
-import { createFiberplane } from "@fiberplane/hono";
+import { createFiberplane, createOpenAPISpec } from "@fiberplane/hono";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import * as schema from "./db/schema";
@@ -31,6 +31,7 @@ const app = new Hono<{
   });
 
 app.onError((error, c) => {
+  console.error(error);
   if (error instanceof HTTPException) {
     return c.json({ message: error.message }, error.status);
   }
@@ -41,26 +42,26 @@ app.onError((error, c) => {
  * Serve a simplified api specification for your API
  * As of writing, this is just the list of routes and their methods.
  */
-app.get("/openapi.json", c => {
-  // @ts-expect-error - @fiberplane/hono is in beta and still not typed correctly
-  return c.json(createOpenAPISpec(app, {
-    openapi: "3.0.0",
-    info: {
-      title: "Honc D1 App",
-      version: "1.0.0",
-    },
-  }))
-});
+// app.get("/openapi.json", c => {
+//   // @ts-expect-error - @fiberplane/hono is in beta and still not typed correctly
+//   return c.json(createOpenAPISpec(app, {
+//     openapi: "3.0.0",
+//     info: {
+//       title: "Honc D1 App",
+//       version: "1.0.0",
+//     },
+//   }))
+// });
 
 /**
  * Mount the Fiberplane api explorer to be able to make requests against your API.
  * 
  * Visit the explorer at `/fp`
  */
-app.use("/fp/*", createFiberplane({
-  app,
-  openapi: { url: "/openapi.json" }
-}));
+// app.use("/fp/*", createFiberplane({
+//   app,
+//   openapi: { url: "/openapi.json" }
+// }));
 
 
 export default app;
