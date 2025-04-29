@@ -11,7 +11,6 @@ const DATE_REGEX = /\d{4}-[01]\d-[0-3]\d\s[0-2]\d:[0-5]\d:[0-5]\d/;
 describe("Create user", () => {
     it("Returns an error if no User Data is sent", async () => {
         const response = await client.api.user.$post();
-
         expect(response.status).toBe(500);
     })
 
