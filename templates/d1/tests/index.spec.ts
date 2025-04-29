@@ -13,42 +13,22 @@ const mockUserData = {
     email: "egoldman@email.com"
 };
 
-describe("Create user", () => {
-    it("Returns an error if no User Data is sent", async () => {
-        const response = await client.api.user.$post();
-        expect(response.status).toBe(500);
-    });
-
-    it("Returns newly created user", async () => {
-        const response = await client.api.user.$post({
-            json: mockUserData
-        });
-
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({
-            id: expect.any(Number),
-            createdAt: expect.stringMatching(DATE_REGEX),
-            updatedAt: expect.stringMatching(DATE_REGEX),
-            ...mockUserData
-        });
-    });
-
-    it("Inserts the created user", async () => {
-        const response = await client.api.users.$get();
+describe("Index", () => {
+    it("Returns landing text", async () => {
+        const response = await client.index.$get();
         expect(response.status).toBe(200);
 
-        const data = await response.json();
-        expect(data.users).toContainEqual({
-            id: expect.any(Number),
-            createdAt: expect.stringMatching(DATE_REGEX),
-            updatedAt: expect.stringMatching(DATE_REGEX),
-            ...mockUserData
-        });
+        const data = await response.text();
+        expect(data).toBe("Honc from above! ☁️🪿");
     })
-});
+})
 
 describe("Get all users", () => {
     it("Returns an an array of users", async () => {
+        await client.api.user.$post({
+            json: mockUserData
+        });
+        
         const response = await client.api.users.$get();
         expect(response.status).toBe(200);
         
@@ -67,6 +47,38 @@ describe("Get all users", () => {
                 name: expect.any(String),
                 email: expect.any(String),
             });
+        });
+    });
+});
+
+describe("Create user", () => {
+    it("Returns an error if no User Data is sent", async () => {
+        const response = await client.api.user.$post();
+        expect(response.status).toBe(500);
+    });
+
+    it("Inserts and returns a User if payload is valid", async () => {
+        const postResponse = await client.api.user.$post({
+            json: mockUserData
+        });
+
+        expect(postResponse.status).toBe(200);
+        expect(await postResponse.json()).toEqual({
+            id: expect.any(Number),
+            createdAt: expect.stringMatching(DATE_REGEX),
+            updatedAt: expect.stringMatching(DATE_REGEX),
+            ...mockUserData
+        });
+
+        const getResponse = await client.api.users.$get();
+        expect(getResponse.status).toBe(200);
+
+        const data = await getResponse.json();
+        expect(data.users).toContainEqual({
+            id: expect.any(Number),
+            createdAt: expect.stringMatching(DATE_REGEX),
+            updatedAt: expect.stringMatching(DATE_REGEX),
+            ...mockUserData
         });
     });
 });
