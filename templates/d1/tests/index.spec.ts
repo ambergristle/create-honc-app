@@ -8,20 +8,20 @@ const client = testClient(app, env);
 
 const DATE_REGEX = /\d{4}-[01]\d-[0-3]\d\s[0-2]\d:[0-5]\d:[0-5]\d/;
 
+const mockUserData = {
+    name: "Emma Goldman",
+    email: "egoldman@email.com"
+};
+
 describe("Create user", () => {
     it("Returns an error if no User Data is sent", async () => {
         const response = await client.api.user.$post();
         expect(response.status).toBe(500);
-    })
+    });
 
     it("Returns newly created user", async () => {
-        const userData = {
-            name: "Emma Goldman",
-            email: "egoldman@email.com"
-        };
-
         const response = await client.api.user.$post({
-            json: userData
+            json: mockUserData
         });
 
         expect(response.status).toBe(200);
@@ -29,9 +29,22 @@ describe("Create user", () => {
             id: expect.any(Number),
             createdAt: expect.stringMatching(DATE_REGEX),
             updatedAt: expect.stringMatching(DATE_REGEX),
-            ...userData
-        })
+            ...mockUserData
+        });
     });
+
+    it("Inserts the created user", async () => {
+        const response = await client.api.users.$get();
+        expect(response.status).toBe(200);
+
+        const data = await response.json();
+        expect(data.users).toContainEqual({
+            id: expect.any(Number),
+            createdAt: expect.stringMatching(DATE_REGEX),
+            updatedAt: expect.stringMatching(DATE_REGEX),
+            ...mockUserData
+        });
+    })
 });
 
 describe("Get all users", () => {
